@@ -1,15 +1,23 @@
 import cv2
 import numpy as np
 import time
+import os
 
 IMAGES_DIRECTORY = 'images/'
+OUTPUT_DIRECTORY = 'outputs/'
 IMAGE_NAMES = [
     'cameramanN1.jpg',
     'cameramanN2.jpg',
     'cameramanN3.jpg',
 ]
 
-BALANCE_ALPHA = 0.7
+BALANCE_ALPHA = 0.8
+
+
+def output_image(display_name, save_name, image):
+    cv2.imshow(display_name, image)
+    cv2.imwrite(OUTPUT_DIRECTORY + save_name, image)
+    print("Image %s is saved." % OUTPUT_DIRECTORY + save_name)
 
 
 def get_kernel():
@@ -95,6 +103,9 @@ def filter_image(image, image_name, filter_name, filtering_function):
 
 
 def main():
+    if not os.path.exists(OUTPUT_DIRECTORY):
+        os.makedirs(OUTPUT_DIRECTORY)
+
     for image_name in IMAGE_NAMES:
         # Read and print the original image.
         image = cv2.imread(IMAGES_DIRECTORY + image_name)
@@ -102,13 +113,14 @@ def main():
 
         # Calculate the mean and print the resulting image.
         filtered_image = filter_image(image, image_name, 'mean filter', mean_filter)
-        cv2.imshow('Mean filtered Image: %s' % image_name, filtered_image)
+        output_image('Mean filtered Image: %s' % image_name, '%s_mean.jpg' % image_name, filtered_image)
 
         filtered_image = filter_image(image, image_name, 'median filter', median_filter)
-        cv2.imshow('Median filtered Image: %s' % image_name, filtered_image)
+        output_image('Median filtered Image: %s' % image_name, '%s_median.jpg' % image_name, filtered_image)
 
         filtered_image = filter_image(image, image_name, 'balanced filter', mean_median_balanced_filter)
-        cv2.imshow('Mean & Median with balance %s filtered Image: %s' % (BALANCE_ALPHA, image_name), filtered_image)
+        output_image('Mean & Median with balance %s filtered Image: %s' % (BALANCE_ALPHA, image_name),
+                     '%s_mean_median%s.jpg' % (image_name, str(BALANCE_ALPHA)), filtered_image)
 
     print("Completed all of the images.")
 
