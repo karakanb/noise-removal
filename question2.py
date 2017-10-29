@@ -4,7 +4,7 @@ import time
 import os
 
 IMAGE_PATH = 'images/StairsBuildingsN.png'
-OUTPUT_DIRECTORY = 'outputs/'
+OUTPUT_DIRECTORY = 'outputs/convolution/'
 
 NORTH = [[-3, -3, -3],
          [-3, 0, -3],
@@ -74,7 +74,21 @@ DIRECTIONS = [
 ]
 
 
+def output_image(display_name, save_name, image):
+    cv2.imshow(display_name, image)
+    cv2.imwrite(OUTPUT_DIRECTORY + save_name, image)
+    print("Image %s%s is saved." % (OUTPUT_DIRECTORY, save_name))
+
+
 def convolution(image, kernel, row, column):
+    """
+    Apply convolution to given image with the kernel and indices.
+    :param image: image that will be convolved.
+    :param kernel: kernel that will be used with convolution.
+    :param row: row index of the central pixel.
+    :param column: row index of the central pixel.
+    :return: the convolved pixel value.
+    """
     value = 0
     for i in range(2, -1, -1):
         for j in range(2, -1, -1):
@@ -91,6 +105,10 @@ def convolution(image, kernel, row, column):
 
 
 def main():
+    # Create the output directory if not exists.
+    if not os.path.exists(OUTPUT_DIRECTORY):
+        os.makedirs(OUTPUT_DIRECTORY)
+
     # Read and print the original image.
     I = cv2.imread(IMAGE_PATH, 0)
     I = cv2.copyMakeBorder(I, 1, 1, 1, 1, cv2.BORDER_REFLECT)
@@ -107,7 +125,9 @@ def main():
                 convolved_image[row][column] = convolution(I, direction["direction"], row, column)
 
         print("Completed convolution for %s" % direction["name"])
-        cv2.imshow('%s' % direction["name"], convolved_image)
+        output_image('%s' % direction["name"], '%s.jpg' % direction["name"], convolved_image)
+
+    print("Convolution is completed.")
 
     # Destroy all the images on any key press.
     cv2.waitKey(0)
