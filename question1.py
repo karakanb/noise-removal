@@ -3,18 +3,20 @@ import numpy as np
 import time
 
 IMAGES_DIRECTORY = 'images/'
+IMAGE_NAMES = [
+    'cameramanN1.jpg',
+    'cameramanN2.jpg',
+    'cameramanN3.jpg',
+]
+
+BALANCE_ALPHA = 0.7
 
 
-def read_image(image_name):
-    image = cv2.imread(image_name)
-
-    return image
+def get_kernel():
+    return np.ones((3, 3), np.float32) / 9
 
 
-def get_mean_with_kernel(image_channel, row, column, kernel, middle_point):
-    filter_area = image_channel[row - middle_point:row + middle_point + 1,
-                  column - middle_point:column + middle_point + 1]
-
+def get_mean_with_kernel(filter_area, kernel):
     # Fastest solution to multiply the matrices and get the result.
     return np.einsum('ijk,ik->i', filter_area, kernel)
 
@@ -39,52 +41,77 @@ def get_mean_with_kernel(image_channel, row, column, kernel, middle_point):
     """
 
 
-def mean_filter(image):
-    # Get the image size for the kernel looping.
-    height, width = image.shape[:2]
-    height -= 2
-    width -= 2
-
+def mean_filter(image, height, width):
     # Set the kernel.
-    kernel = np.ones((3, 3), np.float32) / 9
-    kernel_height, kernel_width = kernel.shape[:2]
-    middle_point = int(kernel_height / 2)
+    kernel = get_kernel()
 
-    for row in range(height):
-        for column in range(width):
-            res = get_mean_with_kernel(image, row + 1, column + 1, kernel, middle_point)
-            image[row + 1][column + 1] = res
+    for row in range(1, height + 1):
+        for column in range(1, width + 1):
+            # Get the area to be filtered with range indexing.
+            filter_area = image[row - 1:row + 2, column - 1:column + 2]
+            res = get_mean_with_kernel(filter_area, kernel)
+            image[row][column] = res
 
     return image
 
 
-def filter_image(image, filtering_function):
+def get_median(filter_area):
+    res = np.median(filter_area, axis=(1, 2))
+    return res
+
+
+def median_filter(image, height, width):
+    for row in range(1, height + 1):
+        for column in range(1, width + 1):
+            filter_area = image[row - 1:row + 2, column - 1:column + 2]
+            image[row][column] = get_median(filter_area)
+
+    return image
+
+
+def mean_median_balanced_filter(image, height, width):
+    for row in range(1, height + 1):
+        for column in range(1, width + 1):
+            filter_area = image[row - 1:row + 2, column - 1:column + 2]
+            mean_filter_vector = get_mean_with_kernel(filter_area, get_kernel())
+            median_filter_vector = get_median(filter_area)
+            image[row][column] = BALANCE_ALPHA * mean_filter_vector + (1 - BALANCE_ALPHA) * median_filter_vector
+    return image
+
+
+def filter_image(image, image_name, filter_name, filtering_function):
+    # Get the image size for the kernel looping.
+    height, width = image.shape[:2]
+
     # Add 1px reflected padding to allow kernels to work properly.
     image = cv2.copyMakeBorder(image, 1, 1, 1, 1, cv2.BORDER_REFLECT)
 
-    return filtering_function(image)
+    print("Calculating %s for %s" % (filter_name, image_name))
+    start_time = time.time()
+    res = filtering_function(image, height, width)
+    print("Successfully calculated %s for %s in %s seconds." % (filter_name, image_name, str(time.time() - start_time)))
+
+    return res
 
 
 def main():
-    images = [
-        'cameramanN1.jpg',
-        'cameramanN2.jpg',
-        'cameramanN3.jpg',
-    ]
-
-    for image_name in images:
+    for image_name in IMAGE_NAMES:
         # Read and print the original image.
         image = cv2.imread(IMAGES_DIRECTORY + image_name)
         cv2.imshow('Original Image: %s' % image_name, image)
 
         # Calculate the mean and print the resulting image.
-        print("Calculating mean filter for %s" % image_name)
-        start_time = time.time()
-        image = filter_image(image, mean_filter)
-        print("Successfully calculated mean filter for %s in %s seconds" % (image_name, str(time.time() - start_time)))
-        cv2.imshow('Mean filtered Image: %s' % image_name, image)
+        filtered_image = filter_image(image, image_name, 'mean filter', mean_filter)
+        cv2.imshow('Mean filtered Image: %s' % image_name, filtered_image)
+
+        filtered_image = filter_image(image, image_name, 'median filter', median_filter)
+        cv2.imshow('Median filtered Image: %s' % image_name, filtered_image)
+
+        filtered_image = filter_image(image, image_name, 'balanced filter', mean_median_balanced_filter)
+        cv2.imshow('Mean & Median with balance %s filtered Image: %s' % (BALANCE_ALPHA, image_name), filtered_image)
 
     print("Completed all of the images.")
+
     # Destroy all the images on any key press.
     cv2.waitKey(0)
     cv2.destroyAllWindows()
