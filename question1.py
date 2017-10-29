@@ -42,14 +42,13 @@ def get_mean_with_kernel(image_channel, row, column, kernel, middle_point):
 def mean_filter(image):
     # Get the image size for the kernel looping.
     height, width = image.shape[:2]
+    height -= 2
+    width -= 2
 
     # Set the kernel.
     kernel = np.ones((3, 3), np.float32) / 9
     kernel_height, kernel_width = kernel.shape[:2]
     middle_point = int(kernel_height / 2)
-
-    # Add 1px reflected padding to allow kernel to work properly.
-    image = cv2.copyMakeBorder(image, 1, 1, 1, 1, cv2.BORDER_REFLECT)
 
     for row in range(height):
         for column in range(width):
@@ -57,6 +56,13 @@ def mean_filter(image):
             image[row + 1][column + 1] = res
 
     return image
+
+
+def filter_image(image, filtering_function):
+    # Add 1px reflected padding to allow kernels to work properly.
+    image = cv2.copyMakeBorder(image, 1, 1, 1, 1, cv2.BORDER_REFLECT)
+
+    return filtering_function(image)
 
 
 def main():
@@ -74,7 +80,7 @@ def main():
         # Calculate the mean and print the resulting image.
         print("Calculating mean filter for %s" % image_name)
         start_time = time.time()
-        image = mean_filter(image)
+        image = filter_image(image, mean_filter)
         print("Successfully calculated mean filter for %s in %s seconds" % (image_name, str(time.time() - start_time)))
         cv2.imshow('Mean filtered Image: %s' % image_name, image)
 
