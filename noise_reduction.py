@@ -111,13 +111,15 @@ def main():
         image = cv2.imread(IMAGES_DIRECTORY + image_name, 0)
         cv2.imshow('Original Image: %s' % image_name, image)
 
-        # Calculate the mean and print the resulting image.
+        # Calculate the mean filtered version and print the resulting image.
         filtered_image = filter_image(image, image_name, 'mean filter', mean_filter)
         output_image('Mean filtered Image: %s' % image_name, '%s_mean.jpg' % image_name, filtered_image)
 
+        # Calculate the median filtered version and print the resulting image.
         filtered_image = filter_image(image, image_name, 'median filter', median_filter)
         output_image('Median filtered Image: %s' % image_name, '%s_median.jpg' % image_name, filtered_image)
 
+        # Calculate the balanced filtered version and print the resulting image.
         filtered_image = filter_image(image, image_name, 'balanced filter', mean_median_balanced_filter)
         output_image('Mean & Median with balance %s filtered Image: %s' % (BALANCE_ALPHA, image_name),
                      '%s_mean_median%s.jpg' % (image_name, str(BALANCE_ALPHA)), filtered_image)
