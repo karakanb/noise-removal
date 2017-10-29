@@ -106,6 +106,12 @@ def main():
     if not os.path.exists(OUTPUT_DIRECTORY):
         os.makedirs(OUTPUT_DIRECTORY)
 
+    """
+    In this program, mean and median filters are applied to the image.
+    The program is built to work on RGB images, therefore some of the filters take approximately 10 seconds.
+    If the input is assumed to be grayscale only, the performance can be increased greatly.
+    """
+
     for image_name in IMAGE_NAMES:
         # Read and print the original image.
         image = cv2.imread(IMAGES_DIRECTORY + image_name)

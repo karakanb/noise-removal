@@ -104,18 +104,7 @@ def convolution(image, kernel, row, column):
     return int(value)
 
 
-def main():
-    # Create the output directory if not exists.
-    if not os.path.exists(OUTPUT_DIRECTORY):
-        os.makedirs(OUTPUT_DIRECTORY)
-
-    # Read and print the original image.
-    I = cv2.imread(IMAGE_PATH, 0)
-    I = cv2.copyMakeBorder(I, 1, 1, 1, 1, cv2.BORDER_REFLECT)
-    cv2.imshow('Stairs Buildings', I)
-
-    height, width = I.shape[:2]
-
+def first_part(I, height, width):
     for direction in DIRECTIONS:
         convolved_image = np.zeros([height, width])
 
@@ -128,6 +117,43 @@ def main():
         output_image('%s' % direction["name"], '%s.jpg' % direction["name"], convolved_image)
 
     print("Convolution is completed.")
+
+
+def second_part(I, height, width):
+    edge_map = np.zeros([height, width])
+
+    print("Constructing edge map.")
+    for row in range(1, height - 1):
+        for column in range(1, width - 1):
+            maximum_edge = 0
+            for direction in DIRECTIONS:
+                res = convolution(I, direction["direction"], row, column)
+                if res > maximum_edge:
+                    maximum_edge = res
+
+            edge_map[row][column] = maximum_edge
+
+    idx = edge_map[:, :] > 200
+    edge_map[idx] = 0
+    output_image('Edge Map', 'edge_map.jpg', edge_map)
+    print("Successfully constructed edge map.")
+
+
+def main():
+    # Create the output directory if not exists.
+    if not os.path.exists(OUTPUT_DIRECTORY):
+        os.makedirs(OUTPUT_DIRECTORY)
+
+    # Read and print the original image.
+    I = cv2.imread(IMAGE_PATH, 0)
+    I = cv2.copyMakeBorder(I, 1, 1, 1, 1, cv2.BORDER_REFLECT)
+    cv2.imshow('Stairs Buildings', I)
+
+    height, width = I.shape[:2]
+    print("====== Part A ========")
+    first_part(I, height, width)
+    print("====== Part B ========")
+    second_part(I, height, width)
 
     # Destroy all the images on any key press.
     cv2.waitKey(0)
