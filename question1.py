@@ -26,7 +26,7 @@ def get_kernel():
 
 def get_mean_with_kernel(filter_area, kernel):
     # Fastest solution to multiply the matrices and get the result.
-    return np.einsum('ijk,ik->i', filter_area, kernel)
+    return np.sum(np.multiply(kernel, filter_area))
 
     """
     This is also slower, since it requires this operation to be done for each of the channels.
@@ -64,7 +64,7 @@ def mean_filter(image, height, width):
 
 
 def get_median(filter_area):
-    res = np.median(filter_area, axis=(1, 2))
+    res = np.median(filter_area)
     return res
 
 
@@ -114,7 +114,7 @@ def main():
 
     for image_name in IMAGE_NAMES:
         # Read and print the original image.
-        image = cv2.imread(IMAGES_DIRECTORY + image_name)
+        image = cv2.imread(IMAGES_DIRECTORY + image_name, 0)
         cv2.imshow('Original Image: %s' % image_name, image)
 
         # Calculate the mean and print the resulting image.
