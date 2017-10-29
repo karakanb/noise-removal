@@ -11,13 +11,13 @@ IMAGE_NAMES = [
     'cameramanN3.jpg',
 ]
 
-BALANCE_ALPHA = 0.8
+BALANCE_ALPHA = 0.2
 
 
 def output_image(display_name, save_name, image):
     cv2.imshow(display_name, image)
     cv2.imwrite(OUTPUT_DIRECTORY + save_name, image)
-    print("Image %s is saved." % OUTPUT_DIRECTORY + save_name)
+    print("Image %s%s is saved." % (OUTPUT_DIRECTORY, save_name))
 
 
 def get_kernel():
