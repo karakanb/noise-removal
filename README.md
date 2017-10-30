@@ -28,7 +28,7 @@ Original Image             |  Mean Filtered Image
 ![Combined Cameraman](images/cameramanN3.jpg)  |  ![Mean Filtered Combined Cameraman](outputs/cameramanN3.jpg_mean.jpg)
 
 ### Median Filter
-In median filter, there is a kernel as well; however, this kernel is not used to determine the mean of the neighbors. Instead, median the values that correspond to the kernel is placed to the pixel in the center of the kernel. Since always the median will be selected, the outlier nodes usually do not affect the outputs, allowing them to be removed easily. Especially in outlier noises, such as salt-and-pepper noise, the noise is removed almost entirely from the image. However, this also introduces some sort of special effect like what a brush does to a painting, increasing the visibility of the edges. In this project, a 3×3 kernel is used for determining the median as well.
+In median filter, there is a kernel as well; however, this kernel is not used to determine the mean of the neighbors. Instead, median of the values that correspond to the kernel is placed to the pixel in the center of the kernel. Since always the median will be selected, the outlier nodes usually do not affect the outputs, allowing them to be removed easily. Especially in outlier noises, such as salt-and-pepper noise, the noise is removed almost entirely from the image. However, this also introduces some sort of special effect like what a brush does to a painting, increasing the visibility of the edges. In this project, a 3×3 kernel is used for determining the median as well.
 
 
 Original Image             |  Median Filtered Image
@@ -38,6 +38,17 @@ Original Image             |  Median Filtered Image
 ![Combined Cameraman](images/cameramanN3.jpg)  |  ![Median Filtered Combined Cameraman](outputs/cameramanN3.jpg_median.jpg)
 
 Especially in the second row of the table, the one with salt-and-pepper noise, the noise is removed almost completely. Even though this operation reduces the quality of the image, it may be suitable for some applications such as this image.
+
+### Combined Balanced Filter
+In order to operate on the mixed noises, as in the third cameraman image, there should be a better filter that deals with both of the noises adequately. To achieve this, a simple filter is constructed with the combination of the mean and median filters. Value of a pixel is determined as `0.2 * meanFilter(pixel) * 0.8 * medianFilter(pixel)` basically. By using this balanced formula, the filter is able to reduce both tyeps of the noise adequately; better than individual versions of those filters.
+
+Original Image             |  Combined Filtered Image
+:-------------------------:|:-------------------------:
+![Gaussian Cameraman](images/cameramanN1.jpg)  |  ![Median Filtered Gaussian Cameraman](outputs/cameramanN1.jpg_mean_median0.2.jpg)
+![Impulsive Cameraman](images/cameramanN2.jpg)  |  ![Median Filtered Impulsive Cameraman](outputs/cameramanN2.jpg_mean_median0.2.jpg)
+![Combined Cameraman](images/cameramanN3.jpg)  |  ![Median Filtered Combined Cameraman](outputs/cameramanN3.jpg_mean_median0.2.jpg)
+
+
 
 ## Edge Detection with Kirsch Compass Masks
 In this part of the project, the main aim is to detect the edges using [Kirsch Compass masks](http://www.tutorialspoint.com/dip/Krisch_Compass_Mask.htm). The Kirsch Compass masks are basically a group of 8 different kernels that allows to understand the edges in 8 directions: North, North West, West, South West, South, South East, East, North East. The idea is to calculate the first derivative of the signal among the pixels, which is represented by the change in brightness, allowing to threshold some certain degrees of changes among the pixels, denoting edges on the image. The kernels are convoluted on the image, calculating the pixel values for the edge map. After the operation, resulting images are printed to screen using `cv2.imshow()` function of OpenCV, and also saved to the `outputs/convolution/` directory. The following two samples are for `NORTH` and `EAST` edge detection masks.
